@@ -32,10 +32,10 @@ places attribution and adaptation details at its beginning.
 
 ## Run with npx
 
-Once the package is published to npm, run it from the directory where `dist/` should be created:
+Run it from the directory where `dist/` should be created:
 
 ```bash
-npx react-docs-ebook
+npx react-docs-book
 ```
 
 The command uses a local React checkout when it finds one in the current directory, an ancestor, or a

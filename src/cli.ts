@@ -7,7 +7,7 @@ import {PROJECT_ROOT, resolveSource} from './source';
 import type {CliOptions} from './types';
 
 export function usage(): string {
-  return `react-docs-ebook
+  return `react-docs-book
 
 Commands:
   build           Build the EPUB

@@ -1,6 +1,6 @@
 {
-  "name": "react-docs-ebook",
-  "version": "0.2.1",
+  "name": "react-docs-book",
+  "version": "0.2.2",
   "description": "Build unofficial EPUB editions of the React documentation.",
   "license": "MIT",
   "repository": {
@@ -15,7 +15,7 @@
     "access": "public"
   },
   "bin": {
-    "react-docs-ebook": "bin/react-docs-ebook.js"
+    "react-docs-book": "bin/react-docs-ebook.js"
   },
   "files": [
     "bin",

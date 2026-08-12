@@ -6,6 +6,13 @@ import test from 'node:test';
 import {projectRoot} from './fixtures';
 
 test('npm package contains a runnable CLI and all compiled runtime files', () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8')) as {
+    name: string;
+    bin: Record<string, string>;
+  };
+  assert.equal(packageJson.name, 'react-docs-book');
+  assert.deepEqual(packageJson.bin, {'react-docs-book': 'bin/react-docs-ebook.js'});
+
   const result = spawnSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], {
     cwd: projectRoot, encoding: 'utf8', env: {...process.env, npm_config_loglevel: 'silent'},
   });
@@ -24,7 +31,7 @@ test('README links the latest release and documents EPUB-only versioned output',
   const readme = fs.readFileSync(path.join(projectRoot, 'README.md'), 'utf8');
   assert.match(readme, /github\.com\/dcavalcante\/react-docs-ebook\/releases\/latest/);
   assert.match(readme, /learn-react-19\.2\.epub/);
-  assert.match(readme, /npx react-docs-ebook/);
+  assert.match(readme, /npx react-docs-book/);
   assert.match(readme, /\.react-docs-ebook\/work/);
   assert.doesNotMatch(readme, /PDF|XeLaTeX|LaTeX/);
 });
