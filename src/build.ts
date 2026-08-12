@@ -78,7 +78,7 @@ export async function build(manifest: BookManifest, options: BuildOptions = {}):
   for (const [route, names] of generated.warnings) console.warn(`Warning: normalized unsupported MDX wrappers in ${route}: ${names.join(', ')}`);
 
   const resourcePath = `${path.join(sourceRoot, 'public')}${path.delimiter}${sourceRoot}`;
-  const common = [markdownFile, '--toc', '--toc-depth=3', `--resource-path=${resourcePath}`, '--syntax-highlighting=none'];
+  const common = [markdownFile, '--toc', '--toc-depth=3', `--resource-path=${resourcePath}`, '--no-highlight'];
   const outputs: string[] = [];
   const stagedOutputs = new Map<string, string>();
 

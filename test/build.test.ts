@@ -18,8 +18,13 @@ test('build publishes outputs and metadata only after Pandoc succeeds', async ()
   await fsp.writeFile(pandoc, `#!/bin/sh
 if [ "$1" = "--version" ]; then exit 0; fi
 for argument in "$@"; do
-  case "$argument" in --output=*) output="\${argument#--output=}" ;; esac
+  case "$argument" in
+    --no-highlight) no_highlight=1 ;;
+    --syntax-highlighting=*) exit 7 ;;
+    --output=*) output="\${argument#--output=}" ;;
+  esac
 done
+test -n "$no_highlight" || exit 7
 test -n "$output" || exit 8
 printf 'fixture ebook\n' > "$output"
 if [ -n "$FAKE_PANDOC_FAIL" ]; then printf 'partial output\n' > "$output"; exit 9; fi
