@@ -5,12 +5,8 @@ import {randomUUID} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {dependencyError} from './dependencies';
 import {generateBook, validateGeneratedBook} from './generator';
-import {PROJECT_ROOT, resolveSource, sourceRevision} from './source';
-import type {BookManifest, BuildMetadata, BuildOptions, BuildResult, OutputFormat} from './types';
-
-function isOutputFormat(value: string): value is OutputFormat {
-  return value === 'epub' || value === 'pdf' || value === 'all';
-}
+import {PROJECT_ROOT, reactVersion, resolveSource, sourceRevision} from './source';
+import type {BookManifest, BuildMetadata, BuildOptions, BuildResult} from './types';
 
 function run(command: string, args: readonly string[]): void {
   const result = spawnSync(command, args, {stdio: 'inherit'});
@@ -56,24 +52,20 @@ async function copyFont(sourceRoot: string, name: string, destination: string): 
 }
 
 export async function build(manifest: BookManifest, options: BuildOptions = {}): Promise<BuildResult> {
-  const requestedFormat = options.format ?? 'epub';
-  if (!isOutputFormat(requestedFormat)) throw new Error('--format must be epub, pdf, or all');
-  const needPdf = requestedFormat === 'pdf' || requestedFormat === 'all';
-  const dependencyOptions = {needPdf, ...(options.pdfEngine === undefined ? {} : {requestedEngine: options.pdfEngine})};
-  const deps = dependencyError(dependencyOptions);
-  if (!deps.result.hasPandoc || (needPdf && (!deps.result.pdfEngine || deps.result.hasSvgConverter === false))) {
-    throw new Error(`Missing build dependencies.\n\n${deps.message}`);
-  }
+  const deps = dependencyError();
+  if (!deps.result.hasPandoc) throw new Error(`Missing build dependencies.\n\n${deps.message}`);
 
   const sourceRoot = await resolveSource(manifest, options);
   const source = sourceRevision(sourceRoot, options.ref ?? manifest.source.ref);
+  const sourceReactVersion = reactVersion(sourceRoot, manifest.source.versionFile);
+  const outputStem = `${manifest.book.slug}-${sourceReactVersion}`;
   const outputDir = path.resolve(options.outputDir ?? path.join(PROJECT_ROOT, 'dist'));
   const workDir = path.resolve(options.workDir ?? path.join(PROJECT_ROOT, 'build'));
   await Promise.all([fsp.mkdir(outputDir, {recursive: true}), fsp.mkdir(workDir, {recursive: true})]);
 
-  const generated = await generateBook({manifest, sourceRoot, revision: source.revision});
+  const generated = await generateBook({manifest, sourceRoot, revision: source.revision, reactVersion: sourceReactVersion});
   await validateGeneratedBook(generated.markdown, sourceRoot);
-  const markdownFile = path.join(workDir, `${manifest.book.slug}.md`);
+  const markdownFile = path.join(workDir, `${outputStem}.md`);
   const temporaryMarkdown = `${markdownFile}.${process.pid}.tmp`;
   await fsp.writeFile(temporaryMarkdown, generated.markdown);
   await fsp.rename(temporaryMarkdown, markdownFile);
@@ -85,7 +77,6 @@ export async function build(manifest: BookManifest, options: BuildOptions = {}):
   const stagedOutputs = new Map<string, string>();
 
   try {
-  if (requestedFormat === 'epub' || requestedFormat === 'all') {
     const fontDir = path.join(workDir, 'fonts');
     await fsp.mkdir(fontDir, {recursive: true});
     const regular = path.join(fontDir, 'Source-Code-Pro-Regular.woff2');
@@ -94,32 +85,17 @@ export async function build(manifest: BookManifest, options: BuildOptions = {}):
       copyFont(sourceRoot, 'Source-Code-Pro-Regular.woff2', regular),
       copyFont(sourceRoot, 'Source-Code-Pro-Bold.woff2', bold),
     ]);
-    const output = path.join(outputDir, `${manifest.book.slug}.epub`);
-    const temporary = path.join(outputDir, `.${manifest.book.slug}.${process.pid}-${randomUUID()}.tmp.epub`);
+    const output = path.join(outputDir, `${outputStem}.epub`);
+    const temporary = path.join(outputDir, `.${outputStem}.${process.pid}-${randomUUID()}.tmp.epub`);
     stagedOutputs.set(temporary, output);
     run('pandoc', [...common, '--split-level=3', `--css=${path.join(PROJECT_ROOT, 'styles', 'epub.css')}`,
       `--epub-embed-font=${regular}`, `--epub-embed-font=${bold}`, `--output=${temporary}`]);
     outputs.push(output);
-  }
-
-  if (needPdf) {
-    const pdfEngine = deps.result.pdfEngine;
-    if (!pdfEngine) throw new Error('PDF engine disappeared after dependency validation');
-    const output = path.join(outputDir, `${manifest.book.slug}.pdf`);
-    const temporary = path.join(outputDir, `.${manifest.book.slug}.${process.pid}-${randomUUID()}.tmp.pdf`);
-    stagedOutputs.set(temporary, output);
-    const args = [...common, `--pdf-engine=${pdfEngine}`, '--variable=geometry:margin=1in',
-      '--variable=fontsize:10pt', '--variable=colorlinks=true'];
-    if (pdfEngine === 'xelatex' || pdfEngine === 'lualatex') args.push(`--include-in-header=${path.join(PROJECT_ROOT, 'styles', 'pdf-header.tex')}`);
-    args.push(`--output=${temporary}`);
-    run('pandoc', args);
-    outputs.push(output);
-  }
 
   const metadata: BuildMetadata = {
     generatedAt: new Date().toISOString(), generatorVersion: generatorVersion(),
     sourceRepository: manifest.source.repository, sourceRevision: source.revision, sourceDirty: source.dirty,
-    sourceRef: options.ref ?? manifest.source.ref, pages: generated.pageCount,
+    sourceRef: options.ref ?? manifest.source.ref, reactVersion: sourceReactVersion, pages: generated.pageCount,
     outputs: outputs.map((output) => path.basename(output)),
   };
   const metadataFile = path.join(outputDir, 'build-metadata.json');

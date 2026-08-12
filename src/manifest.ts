@@ -89,7 +89,7 @@ export function parseManifest(value: unknown): BookManifest {
   if (!isRecord(value.book)) throw new Error('book must be an object');
   if (!isRecord(value.source)) throw new Error('source must be an object');
   rejectUnknownKeys(value.book, ['title', 'subtitle', 'language', 'slug'], 'book');
-  rejectUnknownKeys(value.source, ['repository', 'ref', 'sidebar', 'contentDirectory', 'trackOrder'], 'source');
+  rejectUnknownKeys(value.source, ['repository', 'ref', 'sidebar', 'contentDirectory', 'versionFile', 'trackOrder'], 'source');
   if (!Array.isArray(value.sections)) throw new Error('sections must be an array');
   const subtitle = value.book.subtitle;
   const language = value.book.language;
@@ -119,6 +119,7 @@ export function parseManifest(value: unknown): BookManifest {
       ref: requiredString(value.source, 'ref', 'source'),
       sidebar: safeRelativePath(requiredString(value.source, 'sidebar', 'source'), 'source.sidebar'),
       contentDirectory: safeRelativePath(requiredString(value.source, 'contentDirectory', 'source'), 'source.contentDirectory'),
+      versionFile: safeRelativePath(requiredString(value.source, 'versionFile', 'source'), 'source.versionFile'),
       ...(trackOrder === undefined ? {} : {trackOrder}),
     },
     sections: value.sections.map((item, index) => parseSection(item, `sections[${index}]`)),

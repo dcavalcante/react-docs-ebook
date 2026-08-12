@@ -9,7 +9,7 @@ export const fixtureManifest: BookManifest = {
   book: {title: 'Fixture "Book"', subtitle: 'Conversion tests', language: 'en', slug: 'fixture-book'},
   source: {
     repository: 'reactjs/react.dev', ref: 'fixture', sidebar: 'src/sidebarLearn.json',
-    contentDirectory: 'src/content', trackOrder: true,
+    contentDirectory: 'src/content', versionFile: 'src/siteConfig.js', trackOrder: true,
   },
   sections: [
     {

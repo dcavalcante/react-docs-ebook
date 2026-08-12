@@ -12,6 +12,7 @@
     "ref": "main",
     "sidebar": "src/sidebarLearn.json",
     "contentDirectory": "src/content",
+    "versionFile": "src/siteConfig.js",
     "trackOrder": true
   },
   "sections": [

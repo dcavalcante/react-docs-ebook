@@ -1,11 +1,5 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import {spawnSync} from 'node:child_process';
-
-export interface DependencyOptions {
-  needPdf?: boolean;
-  requestedEngine?: string;
-}
 
 export interface DependencyCheck {
   name: string;
@@ -16,8 +10,6 @@ export interface DependencyCheck {
 export interface DoctorResult {
   checks: DependencyCheck[];
   hasPandoc: boolean;
-  pdfEngine: string | null;
-  hasSvgConverter: boolean | null;
 }
 
 export function commandExists(command: string): boolean {
@@ -57,52 +49,15 @@ export function pandocInstructions(): string[] {
   return ['Install Pandoc using your package manager or the official installer:', '  https://pandoc.org/installing.html'];
 }
 
-export function pdfInstructions(): string[] {
-  const platform = platformKind();
-  if (platform === 'termux') return ['PDF output additionally needs a LaTeX engine. In Termux, install a TeX Live environment supported by your Termux repository,', 'or build EPUB locally and use the GitHub release workflow for PDF output.'];
-  if (platform === 'macos') return ['Install a compact LaTeX distribution:', '  brew install --cask basictex'];
-  if (platform === 'windows') return ['Install MiKTeX for PDF output:', '  choco install miktex', 'Or download it from https://miktex.org/download'];
-  if (['ubuntu', 'debian', 'linuxmint', 'pop'].includes(platform)) return ['Install a LaTeX engine and common packages:', '  sudo apt-get install texlive-xetex texlive-fonts-recommended'];
-  if (['fedora', 'rhel', 'centos', 'rocky', 'almalinux'].includes(platform)) return ['Install a LaTeX engine:', '  sudo dnf install texlive-xetex'];
-  if (['arch', 'manjaro'].includes(platform)) return ['Install a LaTeX engine:', '  sudo pacman -S texlive-bin texlive-basic'];
-  return ['PDF output needs a LaTeX engine such as xelatex, lualatex, or pdflatex.'];
-}
-
-export function svgInstructions(): string[] {
-  const platform = platformKind();
-  if (platform === 'termux') return ['Install SVG conversion support with:', '  pkg install librsvg'];
-  if (platform === 'macos') return ['Install SVG conversion support with Homebrew:', '  brew install librsvg'];
-  if (['ubuntu', 'debian', 'linuxmint', 'pop'].includes(platform)) return ['Install SVG conversion support with:', '  sudo apt-get install librsvg2-bin'];
-  if (['fedora', 'rhel', 'centos', 'rocky', 'almalinux'].includes(platform)) return ['Install SVG conversion support with:', '  sudo dnf install librsvg2-tools'];
-  if (['arch', 'manjaro'].includes(platform)) return ['Install SVG conversion support with:', '  sudo pacman -S librsvg'];
-  if (platform === 'alpine') return ['Install SVG conversion support with:', '  sudo apk add librsvg'];
-  return ['Install librsvg and ensure `rsvg-convert` is available on PATH.'];
-}
-
-export function findPdfEngine(requested?: string): string | null {
-  if (requested) return commandExists(requested) ? requested : null;
-  return ['xelatex', 'lualatex', 'pdflatex', 'wkhtmltopdf', 'weasyprint'].find(commandExists) ?? null;
-}
-
-function needsSvgConverter(engine: string | null): boolean {
-  return engine !== null && ['xelatex', 'lualatex', 'pdflatex'].includes(path.basename(engine));
-}
-
-export function doctor({needPdf = false, requestedEngine}: DependencyOptions = {}): DoctorResult {
+export function doctor(): DoctorResult {
   const hasPandoc = commandExists('pandoc');
   const checks: DependencyCheck[] = [{name: 'Pandoc', ok: hasPandoc, detail: hasPandoc ? 'available' : 'missing'}];
-  const pdfEngine = needPdf ? findPdfEngine(requestedEngine) : null;
-  if (needPdf) checks.push({name: 'PDF engine', ok: pdfEngine !== null, detail: pdfEngine ?? 'missing'});
-  const hasSvgConverter = needPdf && needsSvgConverter(pdfEngine) ? commandExists('rsvg-convert') : null;
-  if (hasSvgConverter !== null) checks.push({name: 'SVG converter', ok: hasSvgConverter, detail: hasSvgConverter ? 'rsvg-convert' : 'missing'});
-  return {checks, hasPandoc, pdfEngine, hasSvgConverter};
+  return {checks, hasPandoc};
 }
 
-export function dependencyError(options: DependencyOptions = {}): {result: DoctorResult; message: string} {
-  const result = doctor(options);
+export function dependencyError(): {result: DoctorResult; message: string} {
+  const result = doctor();
   const lines = result.checks.map((check) => `${check.ok ? '✓' : '✗'} ${check.name}: ${check.detail}`);
   if (!result.hasPandoc) lines.push('', ...pandocInstructions());
-  if (options.needPdf && !result.pdfEngine) lines.push('', ...pdfInstructions());
-  if (result.hasSvgConverter === false) lines.push('', ...svgInstructions());
   return {result, message: lines.join('\n')};
 }

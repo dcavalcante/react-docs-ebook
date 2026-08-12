@@ -1,5 +1,3 @@
-export type OutputFormat = 'epub' | 'pdf' | 'all';
-
 export interface BookPage {
   title: string;
   sourceTitle?: string;
@@ -31,6 +29,7 @@ export interface BookManifest {
     ref: string;
     sidebar: string;
     contentDirectory: string;
+    versionFile: string;
     trackOrder?: boolean;
   };
   sections: BookSection[];
@@ -44,10 +43,8 @@ export interface SourceOptions {
 }
 
 export interface BuildOptions extends SourceOptions {
-  format?: OutputFormat;
   outputDir?: string;
   workDir?: string;
-  pdfEngine?: string;
 }
 
 export interface CliOptions extends BuildOptions {
@@ -95,6 +92,7 @@ export interface BuildMetadata {
   sourceRevision: string;
   sourceDirty: boolean;
   sourceRef: string;
+  reactVersion: string;
   pages: number;
   outputs: string[];
 }

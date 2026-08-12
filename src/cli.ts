@@ -4,15 +4,15 @@ import {dependencyError} from './dependencies';
 import {checkIndex, formatIndexReport} from './index-check';
 import {loadManifest} from './manifest';
 import {PROJECT_ROOT, resolveSource} from './source';
-import type {CliOptions, OutputFormat} from './types';
+import type {CliOptions} from './types';
 
 export function usage(): string {
   return `react-docs-ebook
 
 Commands:
-  build           Build EPUB (default), PDF, or both
+  build           Build the EPUB
   check-updates   Compare book.json with React's current Learn sidebar
-  doctor          Check Pandoc and optional PDF dependencies
+  doctor          Check Pandoc availability
 
 Common options:
   --manifest PATH       Manifest path (default: book.json)
@@ -22,14 +22,12 @@ Common options:
   --download            Download source even when a local checkout exists
 
 Build options:
-  --format epub|pdf|all (default: epub)
   --output-dir PATH     Output directory (default: dist)
-  --work-dir PATH       Intermediate directory (default: build)
-  --pdf-engine COMMAND  Override PDF engine detection`;
+  --work-dir PATH       Intermediate directory (default: build)`;
 }
 
 const booleanOptions = new Set(['refresh', 'download', 'help']);
-const valueOptions = new Set(['manifest', 'source', 'ref', 'format', 'outputDir', 'workDir', 'pdfEngine']);
+const valueOptions = new Set(['manifest', 'source', 'ref', 'outputDir', 'workDir']);
 
 function setBooleanOption(options: CliOptions, key: string): void {
   if (key === 'refresh') options.refresh = true;
@@ -43,15 +41,10 @@ function setStringOption(options: CliOptions, key: string, value: string): void 
   else if (key === 'ref') options.ref = value;
   else if (key === 'outputDir') options.outputDir = value;
   else if (key === 'workDir') options.workDir = value;
-  else if (key === 'pdfEngine') options.pdfEngine = value;
 }
 
 function camelCase(value: string): string {
   return value.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
-}
-
-function isOutputFormat(value: string): value is OutputFormat {
-  return value === 'epub' || value === 'pdf' || value === 'all';
 }
 
 export function parseArgs(argv: readonly string[]): CliOptions {
@@ -70,12 +63,7 @@ export function parseArgs(argv: readonly string[]): CliOptions {
     if (!valueOptions.has(key)) throw new Error(`Unknown option: --${rawKey}`);
     const value = inline ?? argv[++index];
     if (!value || (inline === undefined && value.startsWith('--'))) throw new Error(`Missing value for --${rawKey}`);
-    if (key === 'format') {
-      if (!isOutputFormat(value)) throw new Error('--format must be epub, pdf, or all');
-      options.format = value;
-    } else {
-      setStringOption(options, key, value);
-    }
+    setStringOption(options, key, value);
   }
   if (options._positionals.length > 1) throw new Error(`Unexpected argument: ${options._positionals[1]}`);
   return options;
@@ -87,10 +75,9 @@ export async function main(argv: readonly string[]): Promise<void> {
   if (options.help || command === 'help') { console.log(usage()); return; }
   if (!['build', 'check-updates', 'doctor'].includes(command)) throw new Error(`Unknown command: ${command}\n\n${usage()}`);
   if (command === 'doctor') {
-    const needPdf = options.format === 'pdf' || options.format === 'all';
-    const report = dependencyError({needPdf, ...(options.pdfEngine === undefined ? {} : {requestedEngine: options.pdfEngine})});
+    const report = dependencyError();
     console.log(report.message);
-    if (!report.result.hasPandoc || (needPdf && (!report.result.pdfEngine || report.result.hasSvgConverter === false))) process.exitCode = 1;
+    if (!report.result.hasPandoc) process.exitCode = 1;
     return;
   }
   const {manifest} = loadManifest(options.manifest ?? path.join(PROJECT_ROOT, 'book.json'));

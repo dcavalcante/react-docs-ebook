@@ -5,13 +5,14 @@ import {parseManifest} from '../src/manifest';
 import {fixtureManifest} from './fixtures';
 
 test('parses typed build and source options', () => {
-  assert.deepEqual(parseArgs(['build', '--source', '../react.dev', '--format=all', '--refresh']), {
-    _positionals: ['build'], source: '../react.dev', format: 'all', refresh: true,
+  assert.deepEqual(parseArgs(['build', '--source', '../react.dev', '--output-dir=out', '--refresh']), {
+    _positionals: ['build'], source: '../react.dev', outputDir: 'out', refresh: true,
   });
 });
 
 test('rejects unknown, malformed, and ambiguous CLI arguments', () => {
   assert.throws(() => parseArgs(['build', '--formta', 'epub']), /Unknown option/);
+  assert.throws(() => parseArgs(['build', '--format', 'pdf']), /Unknown option/);
   assert.throws(() => parseArgs(['build', '--refresh=false']), /does not take a value/);
   assert.throws(() => parseArgs(['build', '--source', '--refresh']), /Missing value/);
   assert.throws(() => parseArgs(['build', 'extra']), /Unexpected argument/);

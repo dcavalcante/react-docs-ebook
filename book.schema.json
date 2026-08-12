@@ -20,12 +20,13 @@
     },
     "source": {
       "type": "object",
-      "required": ["repository", "ref", "sidebar", "contentDirectory"],
+      "required": ["repository", "ref", "sidebar", "contentDirectory", "versionFile"],
       "properties": {
         "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
         "ref": {"type": "string", "minLength": 1},
         "sidebar": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(/|$))(?!.*\\\\)[^/]+(?:/[^/]+)*$"},
         "contentDirectory": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(/|$))(?!.*\\\\)[^/]+(?:/[^/]+)*$"},
+        "versionFile": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(/|$))(?!.*\\\\)[^/]+(?:/[^/]+)*$"},
         "trackOrder": {"type": "boolean", "default": true}
       },
       "additionalProperties": false

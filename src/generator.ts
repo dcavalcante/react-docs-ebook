@@ -326,7 +326,7 @@ async function convertPage(
     .replace(/\n{3,}/g, '\n\n').trim();
 }
 
-function attribution(manifest: BookManifest, revision: string): string {
+function attribution(manifest: BookManifest, revision: string, reactVersion: string): string {
   return [
     '# Unofficial Edition and License Notice {#license-notice}',
     '',
@@ -335,6 +335,8 @@ function attribution(manifest: BookManifest, revision: string): string {
     'It is not produced, sponsored, or endorsed by Meta, the React team, or the React Foundation. React is a trademark of Meta Platforms, Inc.',
     '',
     `Source documentation: [react.dev](https://react.dev/) and [${manifest.source.repository}](https://github.com/${manifest.source.repository}).`,
+    '',
+    `React documentation version: **${reactVersion}**.`,
     '',
     'The documentation content is licensed under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0). The upstream license is available in [LICENSE-DOCS.md](https://github.com/reactjs/react.dev/blob/main/LICENSE-DOCS.md).',
     '',
@@ -345,7 +347,9 @@ function attribution(manifest: BookManifest, revision: string): string {
 }
 
 export async function generateBook(
-  {manifest, sourceRoot, revision}: {manifest: BookManifest; sourceRoot: string; revision: string},
+  {manifest, sourceRoot, revision, reactVersion}: {
+    manifest: BookManifest; sourceRoot: string; revision: string; reactVersion: string;
+  },
 ): Promise<GeneratedBook> {
   const sections = enabledSections(manifest);
   const pages = allManifestPages({...manifest, sections}, false);
@@ -353,12 +357,12 @@ export async function generateBook(
   const warnings: MdxWarnings = new Map();
   const output: string[] = [
     '---',
-    `title: ${JSON.stringify(manifest.book.title)}`,
+    `title: ${JSON.stringify(`${manifest.book.title} ${reactVersion}`)}`,
     `subtitle: ${JSON.stringify(manifest.book.subtitle ?? '')}`,
     `lang: ${JSON.stringify(manifest.book.language ?? 'en')}`,
     '---',
     '',
-    attribution(manifest, revision),
+    attribution(manifest, revision, reactVersion),
   ];
 
   for (const section of sections) {

@@ -196,6 +196,19 @@ export async function resolveSource(manifest: BookManifest, options: SourceOptio
 
 export interface SourceRevision {revision: string; dirty: boolean}
 
+export function reactVersion(sourceRoot: string, versionFile: string): string {
+  const location = path.join(sourceRoot, versionFile);
+  let contents: string;
+  try {
+    contents = fs.readFileSync(location, 'utf8');
+  } catch (error) {
+    throw new Error(`Could not read React version from ${location}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  const match = contents.match(/\bversion\s*:\s*(['"])([0-9]+\.[0-9]+(?:\.[0-9]+)?(?:-[0-9A-Za-z.-]+)?)\1/);
+  if (!match?.[2]) throw new Error(`Could not find a valid React version in ${location}`);
+  return match[2];
+}
+
 export function sourceRevision(sourceRoot: string, fallback: string): SourceRevision {
   if (fs.existsSync(path.join(sourceRoot, '.git'))) {
     const result = spawnSync('git', ['-C', sourceRoot, 'rev-parse', 'HEAD'], {encoding: 'utf8'});

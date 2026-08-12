@@ -11,6 +11,9 @@ test('the project manifest is valid and tracks 51 unique routes', () => {
   const {manifest} = loadManifest(path.join(projectRoot, 'book.json'));
   assert.equal(allManifestPages(manifest).length, 51);
   assert.equal(new Set(allManifestPages(manifest).map((page) => page.path)).size, 51);
+  const unsafe = structuredClone(manifest);
+  unsafe.source.versionFile = '../siteConfig.js';
+  assert.throws(() => parseManifest(unsafe), /source\.versionFile must be a safe relative path/);
 });
 
 test('hermetic manifest matches its fixture sidebar', () => {
@@ -40,9 +43,12 @@ test('custom display titles and order can remain update-clean while section move
 });
 
 test('AST conversion preserves code and resolves links, images, wrappers, and heading hierarchy', async () => {
-  const result = await generateBook({manifest: fixtureManifest, sourceRoot: fixtureRoot, revision: 'test-revision'});
+  const result = await generateBook({
+    manifest: fixtureManifest, sourceRoot: fixtureRoot, revision: 'test-revision', reactVersion: '19.2',
+  });
   assert.equal(result.pageCount, 5);
-  assert.match(result.markdown, /title: "Fixture \\"Book\\""/);
+  assert.match(result.markdown, /title: "Fixture \\"Book\\" 19\.2"/);
+  assert.match(result.markdown, /React documentation version: \*\*19\.2\*\*/);
   assert.match(result.markdown, /`<MyButton \/>`/);
   assert.match(result.markdown, /\[Same-page section\]\(#learn-components\)/);
   assert.match(result.markdown, /\[child section\]\(#learn-tutorial-setup\)/);
@@ -70,7 +76,7 @@ test('AST conversion preserves code and resolves links, images, wrappers, and he
 test('enabled false removes content without removing its tracked route', async () => {
   const custom = structuredClone(fixtureManifest) as BookManifest;
   custom.sections[0]!.groups[0]!.enabled = false;
-  const result = await generateBook({manifest: custom, sourceRoot: fixtureRoot, revision: 'test'});
+  const result = await generateBook({manifest: custom, sourceRoot: fixtureRoot, revision: 'test', reactVersion: '19.2'});
   assert.doesNotMatch(result.markdown, /## Quick Start/);
   assert.equal(allManifestPages(custom, true).some((page) => page.path === '/learn'), true);
 });
