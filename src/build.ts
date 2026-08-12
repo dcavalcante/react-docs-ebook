@@ -59,8 +59,9 @@ export async function build(manifest: BookManifest, options: BuildOptions = {}):
   const source = sourceRevision(sourceRoot, options.ref ?? manifest.source.ref);
   const sourceReactVersion = reactVersion(sourceRoot, manifest.source.versionFile);
   const outputStem = `${manifest.book.slug}-${sourceReactVersion}`;
-  const outputDir = path.resolve(options.outputDir ?? path.join(PROJECT_ROOT, 'dist'));
-  const workDir = path.resolve(options.workDir ?? path.join(PROJECT_ROOT, 'build'));
+  const invocationRoot = process.cwd();
+  const outputDir = path.resolve(invocationRoot, options.outputDir ?? 'dist');
+  const workDir = path.resolve(invocationRoot, options.workDir ?? path.join('.react-docs-ebook', 'work'));
   await Promise.all([fsp.mkdir(outputDir, {recursive: true}), fsp.mkdir(workDir, {recursive: true})]);
 
   const generated = await generateBook({manifest, sourceRoot, revision: source.revision, reactVersion: sourceReactVersion});

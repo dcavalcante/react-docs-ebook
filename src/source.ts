@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {Readable} from 'node:stream';
@@ -15,16 +16,47 @@ function isReactSource(candidate: string | undefined, sidebar = 'src/sidebarLear
   return Boolean(candidate && fs.existsSync(path.join(candidate, sidebar)));
 }
 
-export function findLocalSource(explicit: string | undefined, sidebar: string): string | undefined {
-  const candidates = [
-    explicit && explicit !== 'github' ? path.resolve(explicit) : undefined,
-    process.env.REACT_DEV_SOURCE ? path.resolve(process.env.REACT_DEV_SOURCE) : undefined,
-    path.resolve(PROJECT_ROOT, '..', 'react.dev'),
-    path.resolve(PROJECT_ROOT, '..'),
-  ].filter((candidate): candidate is string => candidate !== undefined);
-  const found = candidates.find((candidate) => isReactSource(candidate, sidebar));
-  if (!found && explicit && explicit !== 'github') throw new Error(`Not a react.dev checkout: ${path.resolve(explicit)}`);
-  return found;
+function ancestorCandidates(invocationRoot: string): string[] {
+  const candidates: string[] = [];
+  let current = path.resolve(invocationRoot);
+  while (true) {
+    candidates.push(current, path.join(current, 'react.dev'));
+    const parent = path.dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+  return [...new Set(candidates)];
+}
+
+export function findLocalSource(
+  explicit: string | undefined,
+  sidebar: string,
+  invocationRoot = process.cwd(),
+  env: NodeJS.ProcessEnv = process.env,
+): string | undefined {
+  if (explicit && explicit !== 'github') {
+    const candidate = path.resolve(invocationRoot, explicit);
+    if (!isReactSource(candidate, sidebar)) throw new Error(`Not a react.dev checkout: ${candidate}`);
+    return candidate;
+  }
+  if (env.REACT_DEV_SOURCE) {
+    const candidate = path.resolve(invocationRoot, env.REACT_DEV_SOURCE);
+    if (!isReactSource(candidate, sidebar)) throw new Error(`REACT_DEV_SOURCE is not a react.dev checkout: ${candidate}`);
+    return candidate;
+  }
+  return ancestorCandidates(invocationRoot).find((candidate) => isReactSource(candidate, sidebar));
+}
+
+export function sourceCacheRoot(
+  env: NodeJS.ProcessEnv = process.env,
+  platform: NodeJS.Platform = process.platform,
+  home = os.homedir(),
+): string {
+  if (env.REACT_DOCS_EBOOK_CACHE) return path.resolve(env.REACT_DOCS_EBOOK_CACHE);
+  if (env.XDG_CACHE_HOME) return path.join(path.resolve(env.XDG_CACHE_HOME), 'react-docs-ebook');
+  if (platform === 'win32' && env.LOCALAPPDATA) return path.join(env.LOCALAPPDATA, 'react-docs-ebook');
+  if (platform === 'darwin') return path.join(home, 'Library', 'Caches', 'react-docs-ebook');
+  return path.join(home, '.cache', 'react-docs-ebook');
 }
 
 function safeRef(ref: string): string {
@@ -121,7 +153,7 @@ async function pruneCache(cacheRoot: string, prefix: string, keep: string): Prom
 
 async function downloadSource(manifest: BookManifest, {ref, refresh = false}: SourceOptions = {}): Promise<string> {
   const selectedRef = ref ?? manifest.source.ref;
-  const cacheRoot = path.join(PROJECT_ROOT, '.cache');
+  const cacheRoot = sourceCacheRoot();
   await fsp.mkdir(cacheRoot, {recursive: true});
   const existing = await cachedSource(cacheRoot, manifest.source.repository, selectedRef, manifest.source.sidebar);
 
@@ -190,7 +222,7 @@ export async function resolveSource(manifest: BookManifest, options: SourceOptio
   if (options.source === 'github' || options.download) return downloadSource(manifest, options);
   const local = findLocalSource(options.source, manifest.source.sidebar);
   if (local) return local;
-  console.log('No sibling react.dev checkout found; falling back to GitHub.');
+  console.log('No local react.dev checkout found; falling back to GitHub.');
   return downloadSource(manifest, options);
 }
 

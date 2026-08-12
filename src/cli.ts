@@ -23,7 +23,7 @@ Common options:
 
 Build options:
   --output-dir PATH     Output directory (default: dist)
-  --work-dir PATH       Intermediate directory (default: build)`;
+  --work-dir PATH       Intermediate directory (default: .react-docs-ebook/work)`;
 }
 
 const booleanOptions = new Set(['refresh', 'download', 'help']);

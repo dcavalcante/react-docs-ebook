@@ -24,5 +24,7 @@ test('README links the latest release and documents EPUB-only versioned output',
   const readme = fs.readFileSync(path.join(projectRoot, 'README.md'), 'utf8');
   assert.match(readme, /github\.com\/dcavalcante\/react-docs-ebook\/releases\/latest/);
   assert.match(readme, /learn-react-19\.2\.epub/);
+  assert.match(readme, /npx react-docs-ebook/);
+  assert.match(readme, /\.react-docs-ebook\/work/);
   assert.doesNotMatch(readme, /PDF|XeLaTeX|LaTeX/);
 });

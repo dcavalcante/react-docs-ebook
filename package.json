@@ -1,6 +1,6 @@
 {
   "name": "react-docs-ebook",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Build unofficial EPUB editions of the React documentation.",
   "license": "MIT",
   "repository": {
@@ -11,6 +11,9 @@
     "url": "https://github.com/dcavalcante/react-docs-ebook/issues"
   },
   "homepage": "https://github.com/dcavalcante/react-docs-ebook#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "react-docs-ebook": "bin/react-docs-ebook.js"
   },

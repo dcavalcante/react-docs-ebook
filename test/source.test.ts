@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import test from 'node:test';
-import {reactVersion, sourceRevision} from '../src/source';
+import {findLocalSource, reactVersion, sourceCacheRoot, sourceRevision} from '../src/source';
 
 function git(cwd: string, ...args: string[]): void {
   const result = spawnSync('git', args, {cwd, encoding: 'utf8'});
@@ -42,4 +42,50 @@ test('reads the React documentation version from the selected source', async () 
   } finally {
     await fsp.rm(root, {recursive: true, force: true});
   }
+});
+
+async function createReactSource(root: string): Promise<void> {
+  await fsp.mkdir(path.join(root, 'src'), {recursive: true});
+  await fsp.writeFile(path.join(root, 'src', 'sidebarLearn.json'), '{"routes":[]}\n');
+}
+
+test('discovers react.dev from the invocation directory and workspace ancestors', async () => {
+  const workspace = await fsp.mkdtemp(path.join(os.tmpdir(), 'react-docs-discovery-test-'));
+  const reactRoot = path.join(workspace, 'react.dev');
+  const nestedTool = path.join(workspace, 'tools', 'ebook', 'scripts');
+  try {
+    await Promise.all([createReactSource(reactRoot), fsp.mkdir(nestedTool, {recursive: true})]);
+    const sidebar = 'src/sidebarLearn.json';
+    assert.equal(findLocalSource(undefined, sidebar, workspace, {}), reactRoot);
+    assert.equal(findLocalSource(undefined, sidebar, nestedTool, {}), reactRoot);
+    assert.equal(findLocalSource(undefined, sidebar, path.join(reactRoot, 'src'), {}), reactRoot);
+    assert.equal(findLocalSource('../../../react.dev', sidebar, nestedTool, {}), reactRoot);
+    assert.equal(findLocalSource(undefined, sidebar, nestedTool, {REACT_DEV_SOURCE: '../../../react.dev'}), reactRoot);
+    assert.throws(() => findLocalSource('./missing', sidebar, workspace, {}), /Not a react\.dev checkout/);
+    assert.throws(
+      () => findLocalSource(undefined, sidebar, workspace, {REACT_DEV_SOURCE: './missing'}),
+      /REACT_DEV_SOURCE is not a react\.dev checkout/,
+    );
+  } finally {
+    await fsp.rm(workspace, {recursive: true, force: true});
+  }
+});
+
+test('places downloaded sources in a persistent user cache', () => {
+  assert.equal(
+    sourceCacheRoot({XDG_CACHE_HOME: '/var/cache/example'}, 'linux', '/home/example'),
+    path.join('/var/cache/example', 'react-docs-ebook'),
+  );
+  assert.equal(
+    sourceCacheRoot({}, 'darwin', '/Users/example'),
+    path.join('/Users/example', 'Library', 'Caches', 'react-docs-ebook'),
+  );
+  assert.equal(
+    sourceCacheRoot({}, 'linux', '/home/example'),
+    path.join('/home/example', '.cache', 'react-docs-ebook'),
+  );
+  assert.equal(
+    sourceCacheRoot({REACT_DOCS_EBOOK_CACHE: '/custom/cache'}, 'linux', '/home/example'),
+    '/custom/cache',
+  );
 });

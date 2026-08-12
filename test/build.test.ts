@@ -11,7 +11,7 @@ test('build publishes outputs and metadata only after Pandoc succeeds', async ()
   const temporaryRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 'react-docs-ebook-build-test-'));
   const binDir = path.join(temporaryRoot, 'bin');
   const outputDir = path.join(temporaryRoot, 'dist');
-  const workDir = path.join(temporaryRoot, 'work');
+  const workDir = path.join(temporaryRoot, '.react-docs-ebook', 'work');
   await fsp.mkdir(binDir);
   const pandoc = path.join(binDir, 'pandoc');
   await fsp.writeFile(pandoc, `#!/bin/sh
@@ -30,10 +30,13 @@ if [ -n "$FAKE_PANDOC_FAIL" ]; then printf 'partial output\n' > "$output"; exit 
 `);
   await fsp.chmod(pandoc, 0o700);
   const previousPath = process.env.PATH;
+  const previousWorkingDirectory = process.cwd();
   process.env.PATH = `${binDir}${path.delimiter}${previousPath ?? ''}`;
+  process.chdir(temporaryRoot);
   try {
-    const result = await build(fixtureManifest, {source: fixtureRoot, outputDir, workDir});
+    const result = await build(fixtureManifest, {source: fixtureRoot});
     assert.deepEqual(result.outputs, [path.join(outputDir, 'fixture-book-19.2.epub')]);
+    assert.equal(result.markdownFile, path.join(workDir, 'fixture-book-19.2.md'));
     assert.equal(await fsp.readFile(result.outputs[0]!, 'utf8'), 'fixture ebook\n');
     assert.equal(result.metadata.sourceDirty, false);
     assert.equal(result.metadata.sourceRevision, 'fixture');
@@ -42,12 +45,13 @@ if [ -n "$FAKE_PANDOC_FAIL" ]; then printf 'partial output\n' > "$output"; exit 
 
     await fsp.writeFile(result.outputs[0]!, 'previous good output\n');
     process.env.FAKE_PANDOC_FAIL = '1';
-    await assert.rejects(build(fixtureManifest, {source: fixtureRoot, outputDir, workDir}), /status 9/);
+    await assert.rejects(build(fixtureManifest, {source: fixtureRoot}), /status 9/);
     assert.equal(await fsp.readFile(result.outputs[0]!, 'utf8'), 'previous good output\n');
     assert.deepEqual((await fsp.readdir(outputDir)).filter((name) => name.includes('.tmp')), []);
   } finally {
     delete process.env.FAKE_PANDOC_FAIL;
     process.env.PATH = previousPath;
+    process.chdir(previousWorkingDirectory);
     await fsp.rm(temporaryRoot, {recursive: true, force: true});
   }
 });

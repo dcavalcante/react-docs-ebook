@@ -27,8 +27,28 @@ places attribution and adaptation details at its beginning.
 ## Requirements
 
 - Node.js 18 or newer.
-- TypeScript is installed as a project development dependency.
 - Pandoc.
+- `tar` when downloading the React source from GitHub.
+
+## Run with npx
+
+Once the package is published to npm, run it from the directory where `dist/` should be created:
+
+```bash
+npx react-docs-ebook
+```
+
+The command uses a local React checkout when it finds one in the current directory, an ancestor, or a
+workspace `react.dev/` directory. Otherwise, it downloads the current source from GitHub. Override discovery
+from any directory with `--source /path/to/react.dev`, `--source github`, or `REACT_DEV_SOURCE`.
+
+Relative source, manifest, output, and work paths are resolved from the invocation directory—not npm's
+temporary package directory. The default output is `./dist`, and intermediate files go under
+`./.react-docs-ebook/work`.
+
+## Local development
+
+TypeScript is installed as a project development dependency.
 
 Install the project and compile the strict TypeScript sources:
 
@@ -67,11 +87,12 @@ Without a checkout, download and cache a GitHub source archive:
 node bin/react-docs-ebook.js build --source github --ref main
 ```
 
-Outputs go to `dist/`. The EPUB filename includes the version declared by upstream's configured
-`source.versionFile`; `build-metadata.json` records that React version, the exact upstream revision, and a
-`sourceDirty` flag for local checkouts. Pass `--output-dir PATH` to change the destination. GitHub archives are
-cached under `.cache/`; cached sources can be reused offline, the two newest revisions per ref are retained,
-and `--refresh` forces a redownload.
+Outputs go to `dist/` beneath the invocation directory. The EPUB filename includes the version declared by
+upstream's configured `source.versionFile`; `build-metadata.json` records that React version, the exact upstream
+revision, and a `sourceDirty` flag for local checkouts. Pass `--output-dir PATH` to change the destination.
+Downloaded GitHub archives are stored in the operating system's user cache (or `REACT_DOCS_EBOOK_CACHE`);
+cached sources can be reused offline, the two newest revisions per ref are retained, and `--refresh` forces a
+redownload.
 
 ## Select, remove, and reorder content
 

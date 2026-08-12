@@ -1,4 +1,5 @@
 .cache/
+.react-docs-ebook/
 build/
 coverage/
 dist/
