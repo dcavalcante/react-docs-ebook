@@ -1,0 +1,19 @@
+{
+  "routes": [
+    {"hasSectionHeader": true, "sectionHeader": "GET STARTED"},
+    {
+      "title": "Quick Start",
+      "path": "/learn",
+      "routes": [
+        {"title": "Tutorial", "path": "/learn/tutorial"},
+        {"title": "Reference Page", "path": "/learn/reference-page"}
+      ]
+    },
+    {"hasSectionHeader": true, "sectionHeader": "LEARN REACT"},
+    {
+      "title": "Advanced",
+      "path": "/learn/advanced",
+      "routes": [{"title": "Details", "path": "/learn/details"}]
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "$schema": "./book.schema.json",
+  "schemaVersion": 1,
+  "book": {
+    "title": "Learn React",
+    "subtitle": "An unofficial ebook edition of the React documentation",
+    "language": "en",
+    "slug": "learn-react"
+  },
+  "source": {
+    "repository": "reactjs/react.dev",
+    "ref": "main",
+    "sidebar": "src/sidebarLearn.json",
+    "contentDirectory": "src/content",
+    "trackOrder": true
+  },
+  "sections": [
+    {
+      "title": "Get Started",
+      "indexSection": "GET STARTED",
+      "enabled": true,
+      "groups": [
+        {
+          "title": "Quick Start",
+          "path": "/learn",
+          "enabled": true,
+          "pages": [
+            {"title": "Tutorial: Tic-Tac-Toe", "path": "/learn/tutorial-tic-tac-toe", "enabled": true},
+            {"title": "Thinking in React", "path": "/learn/thinking-in-react", "enabled": true}
+          ]
+        },
+        {
+          "title": "Installation",
+          "path": "/learn/installation",
+          "enabled": true,
+          "pages": [
+            {"title": "Creating a React App", "path": "/learn/creating-a-react-app", "enabled": true},
+            {"title": "Build a React App from Scratch", "path": "/learn/build-a-react-app-from-scratch", "enabled": true},
+            {"title": "Add React to an Existing Project", "path": "/learn/add-react-to-an-existing-project", "enabled": true}
+          ]
+        },
+        {
+          "title": "Setup",
+          "path": "/learn/setup",
+          "enabled": true,
+          "pages": [
+            {"title": "Editor Setup", "path": "/learn/editor-setup", "enabled": true},
+            {"title": "Using TypeScript", "path": "/learn/typescript", "enabled": true},
+            {"title": "React Developer Tools", "path": "/learn/react-developer-tools", "enabled": true}
+          ]
+        },
+        {
+          "title": "React Compiler",
+          "path": "/learn/react-compiler",
+          "enabled": true,
+          "pages": [
+            {"title": "Introduction", "path": "/learn/react-compiler/introduction", "enabled": true},
+            {"title": "Installation", "path": "/learn/react-compiler/installation", "enabled": true},
+            {"title": "Incremental Adoption", "path": "/learn/react-compiler/incremental-adoption", "enabled": true},
+            {"title": "Debugging and Troubleshooting", "path": "/learn/react-compiler/debugging", "enabled": true}
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Learn React",
+      "indexSection": "LEARN REACT",
+      "enabled": true,
+      "groups": [
+        {
+          "title": "Describing the UI",
+          "path": "/learn/describing-the-ui",
+          "enabled": true,
+          "pages": [
+            {"title": "Your First Component", "path": "/learn/your-first-component", "enabled": true},
+            {"title": "Importing and Exporting Components", "path": "/learn/importing-and-exporting-components", "enabled": true},
+            {"title": "Writing Markup with JSX", "path": "/learn/writing-markup-with-jsx", "enabled": true},
+            {"title": "JavaScript in JSX with Curly Braces", "path": "/learn/javascript-in-jsx-with-curly-braces", "enabled": true},
+            {"title": "Passing Props to a Component", "path": "/learn/passing-props-to-a-component", "enabled": true},
+            {"title": "Conditional Rendering", "path": "/learn/conditional-rendering", "enabled": true},
+            {"title": "Rendering Lists", "path": "/learn/rendering-lists", "enabled": true},
+            {"title": "Keeping Components Pure", "path": "/learn/keeping-components-pure", "enabled": true},
+            {"title": "Your UI as a Tree", "path": "/learn/understanding-your-ui-as-a-tree", "enabled": true}
+          ]
+        },
+        {
+          "title": "Adding Interactivity",
+          "path": "/learn/adding-interactivity",
+          "enabled": true,
+          "pages": [
+            {"title": "Responding to Events", "path": "/learn/responding-to-events", "enabled": true},
+            {"title": "State: A Component's Memory", "path": "/learn/state-a-components-memory", "enabled": true},
+            {"title": "Render and Commit", "path": "/learn/render-and-commit", "enabled": true},
+            {"title": "State as a Snapshot", "path": "/learn/state-as-a-snapshot", "enabled": true},
+            {"title": "Queueing a Series of State Updates", "path": "/learn/queueing-a-series-of-state-updates", "enabled": true},
+            {"title": "Updating Objects in State", "path": "/learn/updating-objects-in-state", "enabled": true},
+            {"title": "Updating Arrays in State", "path": "/learn/updating-arrays-in-state", "enabled": true}
+          ]
+        },
+        {
+          "title": "Managing State",
+          "path": "/learn/managing-state",
+          "enabled": true,
+          "pages": [
+            {"title": "Reacting to Input with State", "path": "/learn/reacting-to-input-with-state", "enabled": true},
+            {"title": "Choosing the State Structure", "path": "/learn/choosing-the-state-structure", "enabled": true},
+            {"title": "Sharing State Between Components", "path": "/learn/sharing-state-between-components", "enabled": true},
+            {"title": "Preserving and Resetting State", "path": "/learn/preserving-and-resetting-state", "enabled": true},
+            {"title": "Extracting State Logic into a Reducer", "path": "/learn/extracting-state-logic-into-a-reducer", "enabled": true},
+            {"title": "Passing Data Deeply with Context", "path": "/learn/passing-data-deeply-with-context", "enabled": true},
+            {"title": "Scaling Up with Reducer and Context", "path": "/learn/scaling-up-with-reducer-and-context", "enabled": true}
+          ]
+        },
+        {
+          "title": "Escape Hatches",
+          "path": "/learn/escape-hatches",
+          "enabled": true,
+          "pages": [
+            {"title": "Referencing Values with Refs", "path": "/learn/referencing-values-with-refs", "enabled": true},
+            {"title": "Manipulating the DOM with Refs", "path": "/learn/manipulating-the-dom-with-refs", "enabled": true},
+            {"title": "Synchronizing with Effects", "path": "/learn/synchronizing-with-effects", "enabled": true},
+            {"title": "You Might Not Need an Effect", "path": "/learn/you-might-not-need-an-effect", "enabled": true},
+            {"title": "Lifecycle of Reactive Effects", "path": "/learn/lifecycle-of-reactive-effects", "enabled": true},
+            {"title": "Separating Events from Effects", "path": "/learn/separating-events-from-effects", "enabled": true},
+            {"title": "Removing Effect Dependencies", "path": "/learn/removing-effect-dependencies", "enabled": true},
+            {"title": "Reusing Logic with Custom Hooks", "path": "/learn/reusing-logic-with-custom-hooks", "enabled": true}
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/react-docs-ebook/book.schema.json",
+  "title": "React documentation ebook manifest",
+  "type": "object",
+  "required": ["schemaVersion", "book", "source", "sections"],
+  "properties": {
+    "$schema": {"type": "string"},
+    "schemaVersion": {"const": 1},
+    "book": {
+      "type": "object",
+      "required": ["title", "slug"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "subtitle": {"type": "string"},
+        "language": {"type": "string", "minLength": 1},
+        "slug": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"}
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": ["repository", "ref", "sidebar", "contentDirectory"],
+      "properties": {
+        "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "ref": {"type": "string", "minLength": 1},
+        "sidebar": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(/|$))(?!.*\\\\)[^/]+(?:/[^/]+)*$"},
+        "contentDirectory": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(/|$))(?!.*\\\\)[^/]+(?:/[^/]+)*$"},
+        "trackOrder": {"type": "boolean", "default": true}
+      },
+      "additionalProperties": false
+    },
+    "sections": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/section"}
+    }
+  },
+  "$defs": {
+    "page": {
+      "type": "object",
+      "required": ["title", "path"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "sourceTitle": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "pattern": "^/learn(?:/[a-z0-9][a-z0-9-]*)*$"},
+        "enabled": {"type": "boolean", "default": true}
+      },
+      "additionalProperties": false
+    },
+    "group": {
+      "type": "object",
+      "required": ["title", "path", "pages"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "sourceTitle": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "pattern": "^/learn(?:/[a-z0-9][a-z0-9-]*)*$"},
+        "enabled": {"type": "boolean", "default": true},
+        "pages": {"type": "array", "items": {"$ref": "#/$defs/page"}}
+      },
+      "additionalProperties": false
+    },
+    "section": {
+      "type": "object",
+      "required": ["title", "groups"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "indexSection": {"type": "string", "minLength": 1},
+        "enabled": {"type": "boolean", "default": true},
+        "groups": {"type": "array", "items": {"$ref": "#/$defs/group"}}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

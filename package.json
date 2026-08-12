@@ -1,0 +1,53 @@
+{
+  "name": "react-docs-ebook",
+  "version": "0.1.0",
+  "description": "Build unofficial EPUB and PDF editions of the React documentation.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dcavalcante/react-docs-ebook.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dcavalcante/react-docs-ebook/issues"
+  },
+  "homepage": "https://github.com/dcavalcante/react-docs-ebook#readme",
+  "bin": {
+    "react-docs-ebook": "bin/react-docs-ebook.js"
+  },
+  "files": [
+    "bin",
+    "lib/src",
+    "styles",
+    "book.json",
+    "book.schema.json",
+    "NOTICE.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('lib', {recursive:true, force:true})\"",
+    "compile": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prebuild": "npm run compile",
+    "build": "node bin/react-docs-ebook.js build",
+    "build:all": "npm run build -- --format all",
+    "check-updates": "npm run compile && node bin/react-docs-ebook.js check-updates",
+    "doctor": "npm run compile && node bin/react-docs-ebook.js doctor",
+    "test": "npm run compile && node --test lib/test/*.test.js",
+    "prepack": "npm run clean && npm test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "remark-mdx": "^3.1.1",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.1.0"
+  }
+}
