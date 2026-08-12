@@ -90,7 +90,7 @@ export async function main(argv: readonly string[]): Promise<void> {
     const needPdf = options.format === 'pdf' || options.format === 'all';
     const report = dependencyError({needPdf, ...(options.pdfEngine === undefined ? {} : {requestedEngine: options.pdfEngine})});
     console.log(report.message);
-    if (!report.result.hasPandoc || (needPdf && !report.result.pdfEngine)) process.exitCode = 1;
+    if (!report.result.hasPandoc || (needPdf && (!report.result.pdfEngine || report.result.hasSvgConverter === false))) process.exitCode = 1;
     return;
   }
   const {manifest} = loadManifest(options.manifest ?? path.join(PROJECT_ROOT, 'book.json'));

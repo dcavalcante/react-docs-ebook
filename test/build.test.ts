@@ -15,6 +15,7 @@ test('build publishes outputs and metadata only after Pandoc succeeds', async ()
   await fsp.mkdir(binDir);
   const pandoc = path.join(binDir, 'pandoc');
   const xelatex = path.join(binDir, 'xelatex');
+  const svgConverter = path.join(binDir, 'rsvg-convert');
   await fsp.writeFile(pandoc, `#!/bin/sh
 if [ "$1" = "--version" ]; then exit 0; fi
 for argument in "$@"; do
@@ -30,8 +31,10 @@ printf 'fixture ebook\n' > "$output"
 if [ -n "$FAKE_PANDOC_FAIL" ]; then printf 'partial output\n' > "$output"; exit 9; fi
 `);
   await fsp.writeFile(xelatex, '#!/bin/sh\nexit 0\n');
+  await fsp.writeFile(svgConverter, '#!/bin/sh\nexit 0\n');
   await fsp.chmod(pandoc, 0o700);
   await fsp.chmod(xelatex, 0o700);
+  await fsp.chmod(svgConverter, 0o700);
   const previousPath = process.env.PATH;
   process.env.PATH = `${binDir}${path.delimiter}${previousPath ?? ''}`;
   try {
@@ -42,6 +45,14 @@ if [ -n "$FAKE_PANDOC_FAIL" ]; then printf 'partial output\n' > "$output"; exit 
     assert.equal(result.metadata.sourceDirty, false);
     assert.equal(result.metadata.sourceRevision, 'fixture');
     assert.equal(fs.existsSync(path.join(outputDir, 'build-metadata.json')), true);
+
+    await fsp.rm(svgConverter);
+    await assert.rejects(
+      build(fixtureManifest, {source: fixtureRoot, outputDir, workDir, format: 'all'}),
+      /SVG converter: missing/,
+    );
+    await fsp.writeFile(svgConverter, '#!/bin/sh\nexit 0\n');
+    await fsp.chmod(svgConverter, 0o700);
 
     await fsp.writeFile(result.outputs[0]!, 'previous good output\n');
     await fsp.writeFile(result.outputs[1]!, 'previous good PDF\n');

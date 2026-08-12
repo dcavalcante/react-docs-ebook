@@ -22,6 +22,7 @@ places attribution and adaptation details at its beginning.
 - TypeScript is installed as a project development dependency.
 - Pandoc for EPUB and PDF.
 - A PDF engine for PDF only. XeLaTeX is preferred.
+- `rsvg-convert` from librsvg for SVG illustrations when using a LaTeX PDF engine.
 
 Install the project and compile the strict TypeScript sources:
 

@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 
 export interface DependencyOptions {
@@ -16,6 +17,7 @@ export interface DoctorResult {
   checks: DependencyCheck[];
   hasPandoc: boolean;
   pdfEngine: string | null;
+  hasSvgConverter: boolean | null;
 }
 
 export function commandExists(command: string): boolean {
@@ -66,9 +68,24 @@ export function pdfInstructions(): string[] {
   return ['PDF output needs a LaTeX engine such as xelatex, lualatex, or pdflatex.'];
 }
 
+export function svgInstructions(): string[] {
+  const platform = platformKind();
+  if (platform === 'termux') return ['Install SVG conversion support with:', '  pkg install librsvg'];
+  if (platform === 'macos') return ['Install SVG conversion support with Homebrew:', '  brew install librsvg'];
+  if (['ubuntu', 'debian', 'linuxmint', 'pop'].includes(platform)) return ['Install SVG conversion support with:', '  sudo apt-get install librsvg2-bin'];
+  if (['fedora', 'rhel', 'centos', 'rocky', 'almalinux'].includes(platform)) return ['Install SVG conversion support with:', '  sudo dnf install librsvg2-tools'];
+  if (['arch', 'manjaro'].includes(platform)) return ['Install SVG conversion support with:', '  sudo pacman -S librsvg'];
+  if (platform === 'alpine') return ['Install SVG conversion support with:', '  sudo apk add librsvg'];
+  return ['Install librsvg and ensure `rsvg-convert` is available on PATH.'];
+}
+
 export function findPdfEngine(requested?: string): string | null {
   if (requested) return commandExists(requested) ? requested : null;
   return ['xelatex', 'lualatex', 'pdflatex', 'wkhtmltopdf', 'weasyprint'].find(commandExists) ?? null;
+}
+
+function needsSvgConverter(engine: string | null): boolean {
+  return engine !== null && ['xelatex', 'lualatex', 'pdflatex'].includes(path.basename(engine));
 }
 
 export function doctor({needPdf = false, requestedEngine}: DependencyOptions = {}): DoctorResult {
@@ -76,7 +93,9 @@ export function doctor({needPdf = false, requestedEngine}: DependencyOptions = {
   const checks: DependencyCheck[] = [{name: 'Pandoc', ok: hasPandoc, detail: hasPandoc ? 'available' : 'missing'}];
   const pdfEngine = needPdf ? findPdfEngine(requestedEngine) : null;
   if (needPdf) checks.push({name: 'PDF engine', ok: pdfEngine !== null, detail: pdfEngine ?? 'missing'});
-  return {checks, hasPandoc, pdfEngine};
+  const hasSvgConverter = needPdf && needsSvgConverter(pdfEngine) ? commandExists('rsvg-convert') : null;
+  if (hasSvgConverter !== null) checks.push({name: 'SVG converter', ok: hasSvgConverter, detail: hasSvgConverter ? 'rsvg-convert' : 'missing'});
+  return {checks, hasPandoc, pdfEngine, hasSvgConverter};
 }
 
 export function dependencyError(options: DependencyOptions = {}): {result: DoctorResult; message: string} {
@@ -84,5 +103,6 @@ export function dependencyError(options: DependencyOptions = {}): {result: Docto
   const lines = result.checks.map((check) => `${check.ok ? '✓' : '✗'} ${check.name}: ${check.detail}`);
   if (!result.hasPandoc) lines.push('', ...pandocInstructions());
   if (options.needPdf && !result.pdfEngine) lines.push('', ...pdfInstructions());
+  if (result.hasSvgConverter === false) lines.push('', ...svgInstructions());
   return {result, message: lines.join('\n')};
 }

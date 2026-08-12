@@ -51,7 +51,7 @@ jobs:
       - name: Install Pandoc and PDF dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y pandoc texlive-xetex texlive-fonts-recommended
+          sudo apt-get install -y pandoc librsvg2-bin texlive-xetex texlive-fonts-recommended
       - name: Build EPUB and PDF
         env:
           REACT_REF: ${{ inputs.react_ref || 'main' }}

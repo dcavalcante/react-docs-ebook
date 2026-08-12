@@ -61,7 +61,9 @@ export async function build(manifest: BookManifest, options: BuildOptions = {}):
   const needPdf = requestedFormat === 'pdf' || requestedFormat === 'all';
   const dependencyOptions = {needPdf, ...(options.pdfEngine === undefined ? {} : {requestedEngine: options.pdfEngine})};
   const deps = dependencyError(dependencyOptions);
-  if (!deps.result.hasPandoc || (needPdf && !deps.result.pdfEngine)) throw new Error(`Missing build dependencies.\n\n${deps.message}`);
+  if (!deps.result.hasPandoc || (needPdf && (!deps.result.pdfEngine || deps.result.hasSvgConverter === false))) {
+    throw new Error(`Missing build dependencies.\n\n${deps.message}`);
+  }
 
   const sourceRoot = await resolveSource(manifest, options);
   const source = sourceRevision(sourceRoot, options.ref ?? manifest.source.ref);
