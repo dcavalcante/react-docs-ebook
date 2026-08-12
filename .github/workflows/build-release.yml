@@ -79,4 +79,4 @@ jobs:
       - name: Publish tagged release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" dist/*.epub dist/build-metadata.json --generate-notes
+        run: gh release create "${GITHUB_REF_NAME}" dist/*.epub dist/build-metadata.json --repo "${GITHUB_REPOSITORY}" --generate-notes
