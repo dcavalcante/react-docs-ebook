@@ -48,21 +48,20 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Install Pandoc and PDF dependencies
+      - name: Install Pandoc
         run: |
           sudo apt-get update
-          sudo apt-get install -y pandoc librsvg2-bin texlive-xetex texlive-fonts-recommended
-      - name: Build EPUB and PDF
+          sudo apt-get install -y pandoc
+      - name: Build EPUB
         env:
           REACT_REF: ${{ inputs.react_ref || 'main' }}
           GITHUB_TOKEN: ${{ github.token }}
-        run: npm run build -- --source github --ref "$REACT_REF" --refresh --format all
+        run: npm run build -- --source github --ref "$REACT_REF" --refresh --format epub
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: react-docs-ebook
           path: |
             dist/*.epub
-            dist/*.pdf
             dist/build-metadata.json
 
   release:
@@ -80,4 +79,4 @@ jobs:
       - name: Publish tagged release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" dist/*.epub dist/*.pdf dist/build-metadata.json --generate-notes
+        run: gh release create "${GITHUB_REF_NAME}" dist/*.epub dist/build-metadata.json --generate-notes

@@ -121,8 +121,9 @@ so intentionally omitted pages do not create false update alerts.
 
 - `upstream-check.yml` runs daily and on demand. It opens or updates a tracking issue if React's Learn index
   changes, and closes that issue when the manifest matches again.
-- `build-release.yml` tests pull requests and pushes to `main`, and builds artifacts on demand, weekly, and for
-  version tags. Tags matching `v*` create a GitHub Release containing the books and build metadata.
+- `build-release.yml` tests pull requests and pushes to `main`, and builds the EPUB on demand, weekly, and for
+  version tags. Tags matching `v*` create a GitHub Release containing the EPUB and build metadata. PDF builds
+  remain available explicitly through the CLI without making releases depend on a full TeX installation.
 
 Set no secrets beyond the default `GITHUB_TOKEN`. The workflows download a pinned GitHub archive during each
 job and record the resolved source revision in the output.
