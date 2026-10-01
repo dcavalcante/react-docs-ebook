@@ -330,7 +330,7 @@ function aboutEdition(): string {
   return [
     '# About This Edition {#about-this-edition}',
     '',
-    '![LightCode](assets/lightcode-logo.svg){.lightcode-logo}',
+    '![LightCode](assets/lightcode-logo.png){.lightcode-logo}',
     '',
     'EPUB adaptation and tooling by **[Daniel Cavalcante @ LightCode](https://lightcode.dev)**.',
     '',
