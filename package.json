@@ -21,6 +21,7 @@
     "bin",
     "lib/src",
     "styles",
+    "assets",
     "book.json",
     "book.schema.json",
     "NOTICE.md",
