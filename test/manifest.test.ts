@@ -50,7 +50,7 @@ test('AST conversion preserves code and resolves links, images, wrappers, and he
   assert.match(result.markdown, /title: "Fixture \\"Book\\" 19\.2"/);
   assert.match(result.markdown, /React documentation version: \*\*19\.2\*\*/);
   assert.match(result.markdown, /^# About This Edition \{#about-this-edition\}$/m);
-  assert.match(result.markdown, /!\[LightCode\]\(assets\/lightcode-logo\.svg\)\{\.lightcode-logo\}/);
+  assert.match(result.markdown, /!\[LightCode\]\(assets\/lightcode-logo\.png\)\{\.lightcode-logo\}/);
   assert.match(result.markdown, /\[Daniel Cavalcante @ LightCode\]\(https:\/\/lightcode\.dev\)/);
   assert.doesNotMatch(result.markdown, /utm_source=chatgpt\.com/);
   assert.match(result.markdown, /`<MyButton \/>`/);
