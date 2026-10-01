@@ -65,14 +65,14 @@ export async function build(manifest: BookManifest, options: BuildOptions = {}):
   await Promise.all([fsp.mkdir(outputDir, {recursive: true}), fsp.mkdir(workDir, {recursive: true})]);
 
   const generated = await generateBook({manifest, sourceRoot, revision: source.revision, reactVersion: sourceReactVersion});
-  await validateGeneratedBook(generated.markdown, sourceRoot);
+  await validateGeneratedBook(generated.markdown, sourceRoot, [PROJECT_ROOT]);
   const markdownFile = path.join(workDir, `${outputStem}.md`);
   const temporaryMarkdown = `${markdownFile}.${process.pid}.tmp`;
   await fsp.writeFile(temporaryMarkdown, generated.markdown);
   await fsp.rename(temporaryMarkdown, markdownFile);
   for (const [route, names] of generated.warnings) console.warn(`Warning: normalized unsupported MDX wrappers in ${route}: ${names.join(', ')}`);
 
-  const resourcePath = `${path.join(sourceRoot, 'public')}${path.delimiter}${sourceRoot}`;
+  const resourcePath = [path.join(sourceRoot, 'public'), sourceRoot, PROJECT_ROOT].join(path.delimiter);
   const common = [markdownFile, '--toc', '--toc-depth=3', `--resource-path=${resourcePath}`, '--no-highlight'];
   const outputs: string[] = [];
   const stagedOutputs = new Map<string, string>();
