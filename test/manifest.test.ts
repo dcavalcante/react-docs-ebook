@@ -49,6 +49,10 @@ test('AST conversion preserves code and resolves links, images, wrappers, and he
   assert.equal(result.pageCount, 5);
   assert.match(result.markdown, /title: "Fixture \\"Book\\" 19\.2"/);
   assert.match(result.markdown, /React documentation version: \*\*19\.2\*\*/);
+  assert.match(result.markdown, /^# About This Edition \{#about-this-edition\}$/m);
+  assert.match(result.markdown, /!\[LightCode\]\(assets\/lightcode-logo\.svg\)\{\.lightcode-logo\}/);
+  assert.match(result.markdown, /\[Daniel Cavalcante @ LightCode\]\(https:\/\/lightcode\.dev\)/);
+  assert.doesNotMatch(result.markdown, /utm_source=chatgpt\.com/);
   assert.match(result.markdown, /`<MyButton \/>`/);
   assert.match(result.markdown, /\[Same-page section\]\(#learn-components\)/);
   assert.match(result.markdown, /\[child section\]\(#learn-tutorial-setup\)/);
@@ -68,9 +72,15 @@ test('AST conversion preserves code and resolves links, images, wrappers, and he
   const identifiers = new Set([...result.markdown.matchAll(/\{#([^}]+)\}/g)].map((match) => match[1]));
   const targets = [...result.markdown.matchAll(/\]\(#([^)]+)\)/g)].map((match) => match[1]);
   assert.deepEqual([...new Set(targets.filter((target) => !identifiers.has(target)))], []);
-  await assert.doesNotReject(validateGeneratedBook(result.markdown, fixtureRoot));
-  await assert.rejects(validateGeneratedBook(`${result.markdown}\n[Broken](#missing)\n`, fixtureRoot), /unresolved/);
-  await assert.rejects(validateGeneratedBook(`${result.markdown}\n![Broken](images\/missing.png)\n`, fixtureRoot), /missing local images/);
+  await assert.doesNotReject(validateGeneratedBook(result.markdown, fixtureRoot, [projectRoot]));
+  await assert.rejects(
+    validateGeneratedBook(`${result.markdown}\n[Broken](#missing)\n`, fixtureRoot, [projectRoot]),
+    /unresolved/,
+  );
+  await assert.rejects(
+    validateGeneratedBook(`${result.markdown}\n![Broken](images\/missing.png)\n`, fixtureRoot, [projectRoot]),
+    /missing local images/,
+  );
 });
 
 test('enabled false removes content without removing its tracked route', async () => {
